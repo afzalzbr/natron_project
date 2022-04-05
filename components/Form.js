@@ -10,6 +10,14 @@ import Button from '@mui/material/Button';
 import Grid from '@mui/material/Grid';
 import { ReadFile } from './ReadFile';
 
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableCell from '@mui/material/TableCell';
+import TableContainer from '@mui/material/TableContainer';
+import TableHead from '@mui/material/TableHead';
+import TableRow from '@mui/material/TableRow';
+import Paper from '@mui/material/Paper';
+
 const ariaLabel = { 'aria-label': 'description' };
 
 export default function Form() {
@@ -29,7 +37,9 @@ export default function Form() {
   }
   const [data, setData] = useState({});
   const [state, setState] = useState({
+    email: '',
     date: new Date(),
+    numberOfDays: 1,
     zip: '',
     isMEI: false,
     ME_IRate: 0,
@@ -40,10 +50,9 @@ export default function Form() {
     subtotal: 0,
     isTravelOnlyDay: false
   });
-
-  useEffect(() => {
-    console.log(data)
-  }, [data])
+  const [dates, setDates] = useState([]);
+  const [values, setValues] = useState({});
+  const [showTable, setShowTable] = useState(false);
 
   const onDateChange = (evt) => {
     console.log(evt)
@@ -56,13 +65,46 @@ export default function Form() {
   }
 
   const onZipLeave = (evt) => {
+    let zip = evt.target.value;
+    const { isMEI, isHousing } = state;
+    const object = state;
+    if (zip) {
+      let date = new Date(state.date)
+      let m = date.getMonth() + 1;
+      let month = months[m];
+      let objectData = data[zip];
+      let { meal_rate, incidental_rate } = objectData;
+      let housing_rate = objectData[month]
+      if (isMEI) {
+        object.ME_IRate = meal_rate + incidental_rate
+      }
+      if (isHousing) {
+        object.housingRate = housing_rate;
+      }
+      object.subtotal = (object.ME_IRate * (state.isTravelOnlyDay ? 0.75 : 1)) + object.housingRate + (object.milage * 0.57);
+    } else {
+      object.ME_IRate = 0;
+      object.housingRate = 0;
+      object.subtotal = object.milage * 0.57;
+    }
+    setState({ ...object });
+  }
 
+  const onEmailChange = (evt) => {
+    let value = evt.target.value;
+    setState({ ...state, email: value })
   }
 
   const onJobNumberChange = (evt) => {
     let value = evt.target.value;
     setState({ ...state, jobNumber: value })
   }
+
+  const onNumberOfDaysChange = (evt) => {
+    let value = evt.target.value;
+    setState({ ...state, numberOfDays: value })
+  }
+
 
   const onChangeME_I = (evt) => {
     const { housingRate, milage, isMEI } = state;
@@ -93,7 +135,7 @@ export default function Form() {
     const { ME_IRate, milage } = state;
     if (!state.isHousing) {
       let date = new Date(state.date)
-      let m = date.getMonth();
+      let m = date.getMonth() + 1;
       let month = months[m];
       let zip = state.zip;
       let objectData = data[zip];
@@ -134,12 +176,76 @@ export default function Form() {
     }
   }
 
+  const onSubmit = () => {
+    const { date, numberOfDays, email, zip, isMEI, ME_IRate, isHousing, housingRate, milage, jobNumber, subtotal, isTravelOnlyDay } = state;
+    const datesNew = [];
+    if (!zip) return;
+    if (date && numberOfDays) {
+      for (let i = 0; i < numberOfDays; i++) {
+        let d = new Date(date);
+        d.setDate(d.getDate() + i);
+        // datesNew.push(d);
+        let day = d.getDate();
+        let month = d.getMonth() + 1;
+        console.log(month)
+        let year = d
+          .getFullYear()
+          .toString()
+          .substr(-2);
+
+        datesNew.push(month + '/' + day + '/' + year);
+      }
+    }
+    console.log(datesNew)
+    setDates(datesNew);
+    const objectData = data[zip];
+    const dataNew = []
+    datesNew.map((date, index) => {
+      let d = new Date(date);
+      let m = d.getMonth() + 1;
+      console.log(m)
+      let month = months[m];
+      console.log(month)
+      if (objectData) {
+        let housing_rate = objectData[month];
+        let object = {}
+        object.day = index + 1;
+        object.date = date;
+        object.email = email;
+        object.zip = zip;
+        object.jobNumber = jobNumber;
+        object.isMEI = isMEI ? 'true' : 'false'
+        object.ME_IRate = ME_IRate;
+        object.isHousing = isHousing ? 'true' : 'false'
+        object.housingRate = housing_rate;
+        object.milage = milage;
+        object.isTravelOnlyDay = isTravelOnlyDay;
+        if (isTravelOnlyDay) {
+          object.subtotal = (ME_IRate * 0.75) + housing_rate + (milage * 0.57)
+        } else {
+          object.subtotal = ME_IRate + housing_rate + (milage * 0.57);
+        }
+        dataNew.push(Object.values(object))
+      }
+    })
+    setValues({
+      header: ['Day', 'Date', 'Email', 'Zip', 'Job Number',
+        'Is ME & I', 'ME & I rate', 'is housing',
+        'housing rate', 'milage',
+        'is travel only day', 'subtotal'
+      ], data: dataNew
+    })
+    setShowTable(true)
+    console.log('Data', dataNew)
+  }
+
 
   return (
     <Container maxWidth="lg" sx={{
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
+      flexDirection: 'column',
     }}
     >
       <ReadFile setParentData={setData} />
@@ -159,13 +265,23 @@ export default function Form() {
         autoComplete="off"
       >
         <Grid container rowSpacing={1} columnSpacing={{ xs: 1, sm: 2, md: 3 }}>
-          <Grid item xs={4} alignContent='center' justifyContent={'center'}>
+          <Grid item xs={12}>
+            <Input
+              label={"Enter Email"}
+              variant="outlined"
+              inputProps={ariaLabel}
+              value={state.email}
+              type="email"
+              onChange={onEmailChange}
+            />
+          </Grid>
+          <Grid item xs={6} alignContent='center' justifyContent={'center'}>
             <BasicDatePicker
               date={state.date}
               onChange={onDateChange}
             />
           </Grid>
-          <Grid item xs={4}>
+          <Grid item xs={6}>
             <Input
               label={"Enter Zip"}
               variant="outlined"
@@ -173,12 +289,24 @@ export default function Form() {
               value={state.zip}
               type="number"
               onChange={onZipChange}
+              onBlur={onZipLeave}
             />
           </Grid>
-          <Grid item xs={4}>
+          <Grid item xs={6}>
+            <Input
+              label="Number of days"
+              variant="outlined"
+              inputProps={ariaLabel}
+              type="number"
+              value={state.numberOfDays}
+              onChange={onNumberOfDaysChange}
+            />
+          </Grid>
+          <Grid item xs={6}>
             <Input
               label="Job Number"
               variant="outlined"
+              type="number"
               inputProps={ariaLabel}
               value={state.jobNumber}
               onChange={onJobNumberChange}
@@ -247,10 +375,37 @@ export default function Form() {
             />
           </Grid>
           <Grid item xs={12}>
-            <Button variant="contained">Submit</Button>
+            <Button variant="contained" onClick={onSubmit}>Submit</Button>
           </Grid>
         </Grid>
       </Box>
+
+      {showTable &&
+        <TableContainer component={Paper}>
+          <Table sx={{ minWidth: 650 }} aria-label="simple table">
+            <TableHead>
+              <TableRow>
+                {values.header.map((header, index) => (
+                  <TableCell key={index}>{header}</TableCell>
+                ))}
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {values?.data.map((row) => (
+                <TableRow
+                  key={row.name}
+                  sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                >
+                  {row.map((cell, index) => (
+                    <TableCell key={index}>
+                      {cell}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>}
     </Container>
   );
 }
