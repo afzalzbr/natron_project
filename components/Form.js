@@ -241,31 +241,38 @@ export default function Form() {
 
 
   return (
-    <Container maxWidth="lg" sx={{
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      flexDirection: 'column',
-    }}
-    >
+    // <Container maxWidth="sm" sx={{
+    //   display: 'flex',
+    //   alignItems: 'center',
+    //   justifyContent: 'center',
+    //   flexDirection: 'column',
+    //   background: 'aqua',
+    //   // height: '100vh',
+    //   paddingTop: '10vh',
+    //   paddingBottom: '10vh'
+    // }}
+    // >
+    <>
       <ReadFile setParentData={setData} />
-      {/* <Box sx={{ bgcolor: '#cfe8fc', height: '100vh' }} /> */}
+      {/* <Box sx={{ bgcolor: '#cfe8fc', height: '100vh' }}> */}
       <Box
         component="form"
         sx={{
           '& > :not(style)': { m: 1 },
           bgcolor: '#cfe8fc',
-          width: '80%',
+          width: '100%',
           paddingTop: '10%',
           display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
           height: '100vh',
           // height: '100vh'
         }}
         noValidate
         autoComplete="off"
       >
-        <Grid container rowSpacing={1} columnSpacing={{ xs: 1, sm: 2, md: 3 }}>
-          <Grid item xs={12}>
+        <Grid container rowSpacing={3} columnSpacing={{ xs: 1, sm: 2, md: 3 }} maxWidth="lg">
+          <Grid item sm={6} xs={12} flex justifyContent={'center'}>
             <Input
               label={"Enter Email"}
               variant="outlined"
@@ -273,16 +280,22 @@ export default function Form() {
               value={state.email}
               type="email"
               onChange={onEmailChange}
+              fullWidth
             />
           </Grid>
-          <Grid item xs={6} alignContent='center' justifyContent={'center'}>
+          <Grid item sm={6} xs={0} flex justifyContent={'center'}>
+
+          </Grid>
+          <Grid item sm={6} xs={12} alignContent='center' justifyContent={'center'}>
             <BasicDatePicker
               date={state.date}
               onChange={onDateChange}
+              fullWidth
             />
           </Grid>
-          <Grid item xs={6}>
+          <Grid item sm={6} xs={12}>
             <Input
+              fullWidth
               label={"Enter Zip"}
               variant="outlined"
               inputProps={ariaLabel}
@@ -292,8 +305,9 @@ export default function Form() {
               onBlur={onZipLeave}
             />
           </Grid>
-          <Grid item xs={6}>
+          <Grid item sm={6} xs={12} >
             <Input
+              fullWidth
               label="Number of days"
               variant="outlined"
               inputProps={ariaLabel}
@@ -302,8 +316,9 @@ export default function Form() {
               onChange={onNumberOfDaysChange}
             />
           </Grid>
-          <Grid item xs={6}>
+          <Grid item sm={6} xs={12} >
             <Input
+              fullWidth
               label="Job Number"
               variant="outlined"
               type="number"
@@ -312,7 +327,7 @@ export default function Form() {
               onChange={onJobNumberChange}
             />
           </Grid>
-          <Grid item xs={6}>
+          <Grid item sm={6} xs={4} >
             <FormGroup>
               <FormControlLabel
                 label="ME&I Per Diem "
@@ -321,8 +336,9 @@ export default function Form() {
               />
             </FormGroup>
           </Grid>
-          <Grid item xs={6}>
+          <Grid item sm={6} xs={8} >
             <Input
+              fullWidth
               disabled
               label="ME&I Rate"
               variant="outlined"
@@ -330,7 +346,7 @@ export default function Form() {
               value={state.ME_IRate}
             />
           </Grid>
-          <Grid item xs={6}>
+          <Grid item sm={6} xs={4} >
             <FormGroup>
               <FormControlLabel
                 label="Housing"
@@ -339,8 +355,9 @@ export default function Form() {
               />
             </FormGroup>
           </Grid>
-          <Grid item xs={6}>
+          <Grid item sm={6} xs={8} >
             <Input
+              fullWidth
               disabled
               label="Housing"
               inputProps={ariaLabel}
@@ -348,8 +365,9 @@ export default function Form() {
               value={state.housingRate}
             />
           </Grid>
-          <Grid item xs={6}>
+          <Grid item sm={6} xs={12} >
             <Input
+              fullWidth
               label="Mileage"
               variant="outlined"
               inputProps={ariaLabel}
@@ -358,7 +376,7 @@ export default function Form() {
               onChange={onChangeMilage}
             />
           </Grid>
-          <Grid item xs={6}>
+          <Grid item sm={6} xs={12} >
             <FormGroup>
               <FormControlLabel
                 label="Travel Only Day"
@@ -367,8 +385,9 @@ export default function Form() {
               />
             </FormGroup>
           </Grid>
-          <Grid item xs={6}>
+          <Grid item sm={6} xs={12} >
             <Input label="Subtotal per Day"
+              fullWidth
               inputProps={ariaLabel}
               variant="outlined"
               value={state.subtotal}
@@ -380,7 +399,8 @@ export default function Form() {
         </Grid>
       </Box>
 
-      {showTable &&
+      {
+        showTable &&
         <TableContainer component={Paper}>
           <Table sx={{ minWidth: 650 }} aria-label="simple table">
             <TableHead>
@@ -405,7 +425,10 @@ export default function Form() {
               ))}
             </TableBody>
           </Table>
-        </TableContainer>}
-    </Container>
+        </TableContainer>
+      }
+      {/* </Box> */}
+      {/* </Container > */}
+    </>
   );
 }
