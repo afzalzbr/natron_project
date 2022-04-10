@@ -17,6 +17,8 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
+import axios from 'axios'
+import { EXCEL_SHEET, GOOGLE_SHEET } from './contants';
 
 const ariaLabel = { 'aria-label': 'description' };
 
@@ -52,6 +54,7 @@ export default function Form() {
   });
   const [dates, setDates] = useState([]);
   const [values, setValues] = useState({});
+  // const [objectDataResult, setObjectDataResult] = useState([]);
   const [showTable, setShowTable] = useState(false);
 
   const onDateChange = (evt) => {
@@ -73,15 +76,17 @@ export default function Form() {
       let m = date.getMonth() + 1;
       let month = months[m];
       let objectData = data[zip];
-      let { meal_rate, incidental_rate } = objectData;
-      let housing_rate = objectData[month]
-      if (isMEI) {
-        object.ME_IRate = meal_rate + incidental_rate
+      if (objectData) {
+        let { meal_rate, incidental_rate } = objectData;
+        let housing_rate = objectData[month]
+        if (isMEI) {
+          object.ME_IRate = meal_rate + incidental_rate
+        }
+        if (isHousing) {
+          object.housingRate = housing_rate;
+        }
+        object.subtotal = (object.ME_IRate * (state.isTravelOnlyDay ? 0.75 : 1)) + object.housingRate + (object.milage * 0.57);
       }
-      if (isHousing) {
-        object.housingRate = housing_rate;
-      }
-      object.subtotal = (object.ME_IRate * (state.isTravelOnlyDay ? 0.75 : 1)) + object.housingRate + (object.milage * 0.57);
     } else {
       object.ME_IRate = 0;
       object.housingRate = 0;
@@ -196,20 +201,31 @@ export default function Form() {
         datesNew.push(month + '/' + day + '/' + year);
       }
     }
-    console.log(datesNew)
     setDates(datesNew);
     const objectData = data[zip];
     const dataNew = []
+    const dateNewObjects = []
     datesNew.map((date, index) => {
       let d = new Date(date);
       let m = d.getMonth() + 1;
-      console.log(m)
       let month = months[m];
-      console.log(month)
       if (objectData) {
         let housing_rate = objectData[month];
-        let object = {}
+        let object = {};
+        let newObject = {};
         object.day = index + 1;
+        newObject.Day = index + 1;
+        newObject.Date = date;
+        newObject.Email = email;
+        newObject.JobNumber = jobNumber;
+        newObject.Zip = zip;
+        newObject.Is_MEI = isMEI ? 'true' : 'false';
+        newObject.MEI_Rate = ME_IRate;
+        newObject.Is_Housing = isHousing ? 'true' : 'false';
+        newObject.Housing_Rate = housingRate;
+        newObject.Milage = milage;
+        newObject.Is_Travel = isTravelOnlyDay ? 'true' : 'false';
+
         object.date = date;
         object.email = email;
         object.zip = zip;
@@ -222,9 +238,12 @@ export default function Form() {
         object.isTravelOnlyDay = isTravelOnlyDay;
         if (isTravelOnlyDay) {
           object.subtotal = (ME_IRate * 0.75) + housing_rate + (milage * 0.57)
+          newObject.Subtotal = (ME_IRate * 0.75) + housing_rate + (milage * 0.57)
         } else {
+          newObject.Subtotal = ME_IRate + housing_rate + (milage * 0.57)
           object.subtotal = ME_IRate + housing_rate + (milage * 0.57);
         }
+        dateNewObjects.push(newObject);
         dataNew.push(Object.values(object))
       }
     })
@@ -236,9 +255,18 @@ export default function Form() {
       ], data: dataNew
     })
     setShowTable(true)
-    console.log('Data', dataNew)
+    populateGoogleSheet(dateNewObjects)
   }
 
+  const populateGoogleSheet = (data) => {
+    console.log(data)
+    axios.post(GOOGLE_SHEET, data)
+      .then((res) => { console.log(data) })
+      .catch((err) => { console.log(err) })
+  }
+
+  // console.log(GOOGLE_SHEET)
+  // console.log(EXCEL_SHEET)
 
   return (
     // <Container maxWidth="sm" sx={{
@@ -261,11 +289,11 @@ export default function Form() {
           '& > :not(style)': { m: 1 },
           bgcolor: '#cfe8fc',
           width: '100%',
-          paddingTop: '10%',
+          paddingTop: '5%',
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
-          height: '100vh',
+          height: '100%',
           // height: '100vh'
         }}
         noValidate

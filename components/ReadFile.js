@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import * as XLSX from "xlsx";
+import { EXCEL_SHEET } from './contants';
 // import raw from './data.xlsx';
 
 export const ReadFile = ({ setParentData }) => {
@@ -23,7 +24,7 @@ export const ReadFile = ({ setParentData }) => {
   };
 
   const test = () => {
-    fetch('https://shehroza.github.io/store-images/data.xlsx')
+    fetch(EXCEL_SHEET)
       .then(r => r.blob())
       .then((blob) => {
         let file = new File([blob], './test.xlsx');
@@ -71,9 +72,8 @@ export const ReadFile = ({ setParentData }) => {
         reader.readAsBinaryString(file);
       });
   }
+
   useEffect(() => {
-    // onChange();
-    // console.log(data)
     test();
   }, [])
 
