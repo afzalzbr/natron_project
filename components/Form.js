@@ -235,7 +235,7 @@ export default function Form() {
         object.isHousing = isHousing ? 'true' : 'false'
         object.housingRate = housing_rate;
         object.milage = milage;
-        object.isTravelOnlyDay = isTravelOnlyDay;
+        object.isTravelOnlyDay = isTravelOnlyDay ? 'true' : 'false';
         if (isTravelOnlyDay) {
           object.subtotal = (ME_IRate * 0.75) + housing_rate + (milage * 0.57)
           newObject.Subtotal = (ME_IRate * 0.75) + housing_rate + (milage * 0.57)
@@ -287,9 +287,9 @@ export default function Form() {
         component="form"
         sx={{
           '& > :not(style)': { m: 1 },
-          bgcolor: '#cfe8fc',
+          // bgcolor: '#cfe8fc',
           width: '100%',
-          paddingTop: '5%',
+          // paddingTop: '5%',
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
